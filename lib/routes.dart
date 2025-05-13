@@ -69,8 +69,8 @@ List<GoRoute> generateRoutes() {
               ),
               // Sidebar com o widget atual
               SidebarScreen(
-                child: currentWidget,
                 lastRootPath: lastRootRouteNotifier.lastRootPath,
+                child: currentWidget,
               ),
             ],
           ),
