@@ -30,6 +30,11 @@ class PageB1 extends StatelessWidget {
             child: Column(
           children: [
             Text('Sidebar Page B1'),
+            Container(
+              height: 15,
+              width: double.infinity,
+              color: Colors.red,
+            ),
             ElevatedButton(
               onPressed: () {
                 GoRouter.of(context).go('/b2');
@@ -50,6 +55,11 @@ class PageB2 extends StatelessWidget {
             child: Column(
           children: [
             Text('Sidebar Page B2'),
+            Container(
+              height: 15,
+              width: double.infinity,
+              color: Colors.blue,
+            ),
             ElevatedButton(
               onPressed: () {
                 GoRouter.of(context).go('/a2');

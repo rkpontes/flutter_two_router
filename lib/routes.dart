@@ -17,10 +17,23 @@ class WebBaseRoute {
   });
 }
 
-// Mixin para Rotas da Sidebar
-mixin SidebarBaseRoute on WebBaseRoute {}
+// Classe para gerenciar a última rota raiz
+class LastRootRouteNotifier extends ChangeNotifier {
+  Widget _lastRootWidget = HomeScreen();
+  Widget get lastRootWidget => _lastRootWidget;
 
-// Lista de rotas
+  String _lastRootPath = '/';
+  String get lastRootPath => _lastRootPath;
+
+  void updateLastRoot(Widget widget, String path) {
+    _lastRootWidget = widget;
+    _lastRootPath = path;
+    notifyListeners();
+  }
+}
+
+// Lista de rotas com notifier
+final lastRootRouteNotifier = LastRootRouteNotifier();
 final List<WebBaseRoute> appRoutes = [
   WebBaseRoute(path: '/', builder: (context) => HomeScreen()),
   WebBaseRoute(path: '/a1', builder: (context) => PageA1()),
@@ -37,13 +50,31 @@ List<GoRoute> generateRoutes() {
     return GoRoute(
       path: route.path,
       pageBuilder: (context, state) {
-        // Verifica se a rota é da sidebar
-        if (route.openOnSidebar) {
-          return NoTransitionPage(
-              child: SidebarScreen(child: route.builder(context)));
-        } else {
-          return NoTransitionPage(child: route.builder(context));
+        final currentWidget = route.builder(context);
+
+        // Se não for uma rota de sidebar, atualiza o último widget raiz
+        if (!route.openOnSidebar) {
+          lastRootRouteNotifier.updateLastRoot(currentWidget, route.path);
+          return NoTransitionPage(child: currentWidget);
         }
+
+        // Se for rota de sidebar, mostra o último widget raiz com o sidebar
+        return NoTransitionPage(
+          child: Stack(
+            children: [
+              // Widget da última rota raiz
+              ListenableBuilder(
+                listenable: lastRootRouteNotifier,
+                builder: (context, _) => lastRootRouteNotifier.lastRootWidget,
+              ),
+              // Sidebar com o widget atual
+              SidebarScreen(
+                child: currentWidget,
+                lastRootPath: lastRootRouteNotifier.lastRootPath,
+              ),
+            ],
+          ),
+        );
       },
     );
   }).toList();
