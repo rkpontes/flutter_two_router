@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:two_router/screens/screens.dart';
@@ -5,12 +6,14 @@ import 'package:two_router/screens/sidebar_screen.dart';
 import 'screens/home_screen.dart';
 
 // Classe Base para Rotas
-class WebBaseRoute {
+class BaseRoute {
   final String path;
   final Widget Function(BuildContext) builder;
+
+  /// openOnSidebar: compatible only web
   final bool openOnSidebar;
 
-  const WebBaseRoute({
+  const BaseRoute({
     required this.path,
     required this.builder,
     this.openOnSidebar = false,
@@ -34,14 +37,12 @@ class LastRootRouteNotifier extends ChangeNotifier {
 
 // Lista de rotas com notifier
 final lastRootRouteNotifier = LastRootRouteNotifier();
-final List<WebBaseRoute> appRoutes = [
-  WebBaseRoute(path: '/', builder: (context) => HomeScreen()),
-  WebBaseRoute(path: '/a1', builder: (context) => PageA1()),
-  WebBaseRoute(path: '/a2', builder: (context) => PageA2()),
-  WebBaseRoute(
-      path: '/b1', builder: (context) => PageB1(), openOnSidebar: true),
-  WebBaseRoute(
-      path: '/b2', builder: (context) => PageB2(), openOnSidebar: true),
+final List<BaseRoute> appRoutes = [
+  BaseRoute(path: '/', builder: (context) => HomeScreen()),
+  BaseRoute(path: '/a1', builder: (context) => PageA1()),
+  BaseRoute(path: '/a2', builder: (context) => PageA2()),
+  BaseRoute(path: '/b1', builder: (context) => PageB1(), openOnSidebar: true),
+  BaseRoute(path: '/b2', builder: (context) => PageB2(), openOnSidebar: true),
 ];
 
 // Função para gerar as rotas com GoRouter
@@ -52,29 +53,35 @@ List<GoRoute> generateRoutes() {
       pageBuilder: (context, state) {
         final currentWidget = route.builder(context);
 
-        // Se não for uma rota de sidebar, atualiza o último widget raiz
-        if (!route.openOnSidebar) {
-          lastRootRouteNotifier.updateLastRoot(currentWidget, route.path);
-          return NoTransitionPage(child: currentWidget);
+        // Para web, verifica se a rota deve abrir no sidebar ou não
+        if (kIsWeb) {
+          // Se não for uma rota de sidebar, atualiza o último widget raiz
+          if (!route.openOnSidebar) {
+            lastRootRouteNotifier.updateLastRoot(currentWidget, route.path);
+            return NoTransitionPage(child: currentWidget);
+          }
+
+          // Se for rota de sidebar, mostra o último widget raiz com o sidebar
+          return NoTransitionPage(
+            child: Stack(
+              children: [
+                // Widget da última rota raiz
+                ListenableBuilder(
+                  listenable: lastRootRouteNotifier,
+                  builder: (context, _) => lastRootRouteNotifier.lastRootWidget,
+                ),
+                // Sidebar com o widget atual
+                SidebarScreen(
+                  lastRootPath: lastRootRouteNotifier.lastRootPath,
+                  child: currentWidget,
+                ),
+              ],
+            ),
+          );
         }
 
-        // Se for rota de sidebar, mostra o último widget raiz com o sidebar
-        return NoTransitionPage(
-          child: Stack(
-            children: [
-              // Widget da última rota raiz
-              ListenableBuilder(
-                listenable: lastRootRouteNotifier,
-                builder: (context, _) => lastRootRouteNotifier.lastRootWidget,
-              ),
-              // Sidebar com o widget atual
-              SidebarScreen(
-                lastRootPath: lastRootRouteNotifier.lastRootPath,
-                child: currentWidget,
-              ),
-            ],
-          ),
-        );
+        // Para dispositivos móveis, apenas retorna o widget atual
+        return NoTransitionPage(child: currentWidget);
       },
     );
   }).toList();
