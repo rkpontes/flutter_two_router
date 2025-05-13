@@ -39,10 +39,25 @@ class LastRootRouteNotifier extends ChangeNotifier {
 final lastRootRouteNotifier = LastRootRouteNotifier();
 final List<BaseRoute> appRoutes = [
   BaseRoute(path: '/', builder: (context) => HomeScreen()),
-  BaseRoute(path: '/a1', builder: (context) => PageA1()),
-  BaseRoute(path: '/a2', builder: (context) => PageA2()),
-  BaseRoute(path: '/b1', builder: (context) => PageB1(), openOnSidebar: true),
-  BaseRoute(path: '/b2', builder: (context) => PageB2(), openOnSidebar: true),
+  // Microapp de Finanças - Com sidebar para análises detalhadas
+  BaseRoute(path: '/finances', builder: (context) => FinancesPage()),
+  BaseRoute(
+      path: '/finances/transactions',
+      builder: (context) => FinancesTransactionsPage()),
+  BaseRoute(
+      path: '/finances/analytics',
+      builder: (context) => FinancesAnalyticsPage(),
+      openOnSidebar: true),
+  BaseRoute(
+      path: '/finances/reports',
+      builder: (context) => FinancesReportsPage(),
+      openOnSidebar: true),
+
+  // Microapp de Notificações - Sem sidebar para manter interface limpa
+  BaseRoute(path: '/notifications', builder: (context) => NotificationsPage()),
+  BaseRoute(
+      path: '/notifications/settings',
+      builder: (context) => NotificationsSettingsPage()),
 ];
 
 // Função para gerar as rotas com GoRouter
